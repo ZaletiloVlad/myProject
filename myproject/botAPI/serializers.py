@@ -3,6 +3,7 @@ from rest_framework import serializers
 from botAPI.models import CustomUser, Space, SpendingCategory, Spending, ReferralCode, SpaceLog, PersonStatus
 
 class PersonStatusSerializer(serializers.ModelSerializer):
+    space = serializers.SlugRelatedField(slug_field='title', read_only=True)
 
     class Meta:
         model = PersonStatus
@@ -38,6 +39,11 @@ class SpaceSerializer(serializers.ModelSerializer):
         model = Space
         fields = ["id", "title", "currency", "status", "space_spending"]
 
+
+class CreatingSpaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Space
+        fields = ["id", "title", "currency"]
 
 class SpendingCategorySerializer(serializers.ModelSerializer):
     class Meta:

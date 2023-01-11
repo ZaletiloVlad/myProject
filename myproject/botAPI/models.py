@@ -18,20 +18,19 @@ class BaseDateMixin(models.Model):
 class CustomUser(BaseDateMixin):
     name = models.CharField(max_length=50)
     telegram_id = models.PositiveIntegerField()
-    #TODO сделать огранчение тгайди в 9 символов
 
     def __str__(self):
         return f'{self.name}'
 
 
 class Space(BaseDateMixin):
-    title = models.CharField(max_length=25)
+    title = models.CharField(max_length=50)
     currency = models.CharField(max_length=3, choices=currency_choices)
     users = models.ManyToManyField(CustomUser, related_name='space', through='PersonStatus')
 
     @property
     def cost_amount(self):
-        total = sum(obj.exptnse for obj in self.space_spending.all())
+        total = sum(obj.expense for obj in self.space_spending.all())
         return total
 
     def __str__(self):
@@ -65,7 +64,6 @@ class SpendingCategory(BaseDateMixin):
 
 class Spending(BaseDateMixin):
     category = models.ForeignKey(SpendingCategory, on_delete=models.CASCADE)
-    spending_time = models.DateTimeField(auto_now_add=True)
     expense = models.DecimalField(max_digits=9, decimal_places=2)
     currency = models.CharField(max_length=3, choices=currency_choices)
     space = models.ForeignKey(Space, on_delete=models.CASCADE, related_name='space_spending')
@@ -83,9 +81,8 @@ class ReferralCode(BaseDateMixin):
 
 class SpaceLog(BaseDateMixin):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    time = models.DateTimeField(auto_now=True)
     action = models.TextField()
-    #TODO Delete time field
+
 
     def __str__(self):
         return f'{self.user} | {self.action}'

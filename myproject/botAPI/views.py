@@ -4,8 +4,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 
-from botAPI.models import CustomUser, Space
-from botAPI.serializers import UserSerializer, SpaceSerializer, UserConnectSerializer
+from botAPI.models import CustomUser, Space, SpaceLog, PersonStatus
+from botAPI.serializers import UserSerializer, SpaceSerializer, UserConnectSerializer, CreatingSpaceSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -18,9 +18,15 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         user, created = CustomUser.objects.get_or_create(telegram_id=data["telegram_id"])
-        if created:
+
+        if created or user.name != data['name']:
             user.name = data["name"]
             user.save()
+            if created:
+                SpaceLog.objects.create(user=user, action=f"Добавлен пользователь")
+            else:
+                SpaceLog.objects.create(user=user, action=f"Иземенено имя пользователя")
+
         return Response(UserConnectSerializer(user).data, status.HTTP_200_OK)
 
     # @action(detail=False, methods=["POST"], url_path="connect", url_name="connect")
@@ -43,11 +49,24 @@ class SpaceViewSet(viewsets.ModelViewSet):
     queryset = Space.objects.all()
     serializer_class = SpaceSerializer
 
+    @action(detail=False, methods=["POST"], url_path="space_create", url_name="space_create")
+    def space_create(self, request):
+        user = CustomUser.objects.get(pk=request.data['id'])
+        del request.data['id']
+        serializer = CreatingSpaceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        space = Space.objects.create(title=data['title'], currency=data['currency'])
+        PersonStatus.objects.create(user=user, space=space, grade='A')
+        SpaceLog.objects.create(user=user, action=f"Создан новый SPACE")
+        return Response(CreatingSpaceSerializer(space).data, status=status.HTTP_201_CREATED)
 
-# def GetIdView(request, tg_id):
-#     user = CustomUser.objects.get(telegram_id=tg_id)
-#     id = user.id
-#     return Response({tg_id: id})
+    @action(detail=False, methods=["POST"], url_path="get_space", url_name="get_space")
+    def grt_space(self, request):
+        user = CustomUser.objects.get(pk=request.data['id'])
+        del request.data['id']
+        print(request.data)
+        space = Space.objects.get(titile=request.data)
 
 @api_view(["GET"])
 def health_check(request):
