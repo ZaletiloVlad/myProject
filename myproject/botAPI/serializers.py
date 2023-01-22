@@ -4,6 +4,7 @@ from botAPI.models import CustomUser, Space, SpendingCategory, Spending, Referra
 
 class PersonStatusSerializer(serializers.ModelSerializer):
     space = serializers.SlugRelatedField(slug_field='title', read_only=True)
+    user = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     class Meta:
         model = PersonStatus
@@ -28,7 +29,15 @@ class UserSerializer(serializers.ModelSerializer):
 class SpendingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Spending
-        fields = "__all__"
+        fields = ["id", "category", "user", "currency", "expense", "space"]
+
+
+class NewSpendingSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(slug_field='title', read_only=True)
+    user = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    class Meta:
+        model = Spending
+        fields = ["id", "category", "user", "currency", "expense", "space"]
 
 
 class SpaceSerializer(serializers.ModelSerializer):
@@ -48,13 +57,13 @@ class CreatingSpaceSerializer(serializers.ModelSerializer):
 class SpendingCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SpendingCategory
-        fields = "__all__"
+        fields = ["id", "title", "space"]
 
 
 class ReferralCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReferralCode
-        fields = "__all__"
+        fields = ["id", "code", "expiration_time", "user", "space"]
 
 
 class SpaceLogSerializer(serializers.ModelSerializer):
