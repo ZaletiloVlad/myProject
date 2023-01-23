@@ -330,7 +330,6 @@ class SpendingViewSet(viewsets.ModelViewSet):
             less_than = time_finder(6)
         elif request.data['time'] == 'year':
             less_than = datetime.datetime.now() - datetime.timedelta(days=365)
-        print(less_than)
 
         space = Space.objects.get(title=request.data['space'])
 
@@ -339,8 +338,6 @@ class SpendingViewSet(viewsets.ModelViewSet):
             expenses = Spending.objects.filter(space=space, user=user, created_at__gte=less_than)
         else:
             expenses = Spending.objects.filter(space=space, created_at__gte=less_than)
-
-        print(expenses)
 
         return Response(NewSpendingSerializer(expenses, many=True).data, status=status.HTTP_200_OK)
 
